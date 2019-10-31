@@ -4,8 +4,13 @@
 
 #if defined(CONFIG_AS_LSE) && defined(CONFIG_ARM64_LSE_ATOMICS)
 
+#define __LSE_PREAMBLE	".arch armv8-a+lse\n"
+
+#include <linux/compiler_types.h>
+#include <linux/export.h>
 #include <linux/stringify.h>
 #include <asm/alternative.h>
+#include <asm/cpucaps.h>
 
 #ifdef __ASSEMBLER__
 
@@ -43,7 +48,7 @@ __asm__(".arch_extension	lse");
 #else
 /* In-line patching at runtime */
 #define ARM64_LSE_ATOMIC_INSN(llsc, lse)				\
-	ALTERNATIVE(llsc, lse, ARM64_HAS_LSE_ATOMICS)
+	ALTERNATIVE(llsc, __LSE_PREAMBLE lse, ARM64_HAS_LSE_ATOMICS)
 #endif	/* CONFIG_SEC_ARM64_LSE_ATOMICS */
 
 #endif	/* __ASSEMBLER__ */
