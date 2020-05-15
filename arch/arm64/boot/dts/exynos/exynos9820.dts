@@ -3393,6 +3393,7 @@
 
 	coresight@1e000000 {
 		compatible = "exynos,coresight";
+		status = "disabled";
 		base = <0x1e000000>;
 		sj-offset = <0x6000>;
 		funnel-num = <0x3>;
