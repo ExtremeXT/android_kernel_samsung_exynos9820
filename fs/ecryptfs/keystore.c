@@ -2371,10 +2371,10 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
 	struct crypto_skcipher *tfm;
 	struct skcipher_request *req;
 	int rc = 0;
+	char *iv = NULL;
 
 #ifdef CONFIG_CRYPTO_FIPS
 	char *hash_key = NULL;
-	char *iv = NULL;
 #endif
 	(*packet_size) = 0;
 	ecryptfs_from_hex(key_rec->sig, auth_tok->token.password.signature,
