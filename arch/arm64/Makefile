@@ -123,6 +123,18 @@ KBUILD_AFLAGS	+= $(call cc-option,-mabi=lp64)
 ifeq ($(CONFIG_AS_HAS_ARMV8_2), y)
 # make sure to pass the newest target architecture to -march.
 asm-arch := armv8.2-a
+
+ifeq ($(CONFIG_SOC_EXYNOS9820), y)
+ifeq ($(cc-name),clang)
+KBUILD_CFLAGS   += -mcpu=cortex-a75
+KBUILD_AFLAGS   += -mcpu=cortex-a75
+ifeq ($(CONFIG_LD_IS_LLD), y)
+KBUILD_LDFLAGS  += -mllvm -mcpu=cortex-a75
+endif
+else
+KBUILD_CFLAGS   += -mcpu=cortex-a75.cortex-a55
+KBUILD_AFLAGS   += -mcpu=cortex-a75.cortex-a55
+endif
 endif
 
 ifeq ($(CONFIG_CPU_BIG_ENDIAN), y)
