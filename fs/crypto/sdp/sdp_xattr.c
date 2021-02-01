@@ -80,6 +80,7 @@ int fscrypt_sdp_set_context_nolock(struct inode *inode, void *ctx, size_t len, v
 	return __fscrypt_sdp_set_context(inode, ctx, len, false, fs_data);
 }
 
+#ifdef CONFIG_DDAR
 static int __fscrypt_knox_set_context(struct inode *inode, void *ctx, size_t len)
 {
 	if (inode->i_sb->s_cop->set_knox_context) {
@@ -93,3 +94,4 @@ int fscrypt_knox_set_context(struct inode *inode, void *ctx, size_t len)
 {
 	return __fscrypt_knox_set_context(inode, ctx, len);
 }
+#endif
