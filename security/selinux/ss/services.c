@@ -81,6 +81,7 @@ char *selinux_policycap_names[__POLICYDB_CAPABILITY_MAX] = {
 };
 
 int selinux_android_netlink_route;
+int selinux_android_netlink_getneigh;
 int selinux_policycap_netpeer;
 int selinux_policycap_openperm;
 int selinux_policycap_extsockclass;
@@ -2041,6 +2042,7 @@ static void security_load_policycaps(void)
 				i);
 	}
 	selinux_android_netlink_route = policydb.android_netlink_route;
+	selinux_android_netlink_getneigh = policydb.android_netlink_getneigh;
 	selinux_nlmsg_init();
 }
 
