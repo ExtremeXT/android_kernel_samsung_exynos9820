@@ -408,6 +408,10 @@ struct sec_battery_info {
 	bool store_mode;
 	bool slate_mode;
 
+	/* charging disabler */
+	bool charging_enabled;
+	bool charging_suspended;
+
 	/* MTBF test for CMCC */
 	bool is_hc_usb;
 
