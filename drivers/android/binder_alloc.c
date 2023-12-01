@@ -444,6 +444,10 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 				alloc->pid, extra_buffers_size);
 		return ERR_PTR(-EINVAL);
 	}
+
+	/* Pad 0-size buffers so they get assigned unique addresses */
+	size = max(size, sizeof(void *));
+
 #ifdef CONFIG_SAMSUNG_FREECESS
 	if (is_async && (alloc->free_async_space < 3*(size + sizeof(struct binder_buffer))
 		|| (alloc->free_async_space < ((alloc->buffer_size/2)*9/10)))) {
@@ -455,6 +459,7 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 		}
 	}
 #endif
+
 	if (is_async &&
 	    alloc->free_async_space < size + sizeof(struct binder_buffer)) {
 		//binder_alloc_debug(BINDER_DEBUG_BUFFER_ALLOC,
@@ -479,9 +484,6 @@ static struct binder_buffer *binder_alloc_new_buf_locked(
 		         alloc->pid, size, alloc->free_async_space);
 		return ERR_PTR(-ENOSPC);
 	}
-
-	/* Pad 0-size buffers so they get assigned unique addresses */
-	size = max(size, sizeof(void *));
 
 	while (n) {
 		buffer = rb_entry(n, struct binder_buffer, rb_node);
