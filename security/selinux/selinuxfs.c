@@ -157,11 +157,10 @@ static ssize_t sel_write_enforce(struct file *file, const char __user *buf,
 #elif defined(CONFIG_SECURITY_SELINUX_ALWAYS_PERMISSIVE)
 	// If always permissive option is set, selinux is always permissive
 	new_value = 0;
-        length = avc_has_perm(&selinux_state,
-				      current_sid(), SECINITSID_SECURITY,
+        length = avc_has_perm(current_sid(), SECINITSID_SECURITY,
 				      SECCLASS_SECURITY, SECURITY__SETENFORCE,
 				      NULL);
-	audit_log(audit_context(), GFP_KERNEL, AUDIT_MAC_STATUS,
+	audit_log(current->audit_context, GFP_KERNEL, AUDIT_MAC_STATUS,
 			"enforcing=%d old_enforcing=%d auid=%u ses=%u"
 			" enabled=%d old-enabled=%d lsm=selinux res=1",
 			new_value, selinux_enforcing,
