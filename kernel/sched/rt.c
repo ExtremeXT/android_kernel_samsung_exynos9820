@@ -381,7 +381,7 @@ static inline void update_activated_cpus(void) { };
 #endif
 
 int sched_rr_timeslice = RR_TIMESLICE;
-int sysctl_sched_rr_timeslice = (MSEC_PER_SEC / HZ) * RR_TIMESLICE;
+int sysctl_sched_rr_timeslice = (MSEC_PER_SEC * RR_TIMESLICE) / HZ;
 
 void update_rt_load_avg(u64 now, struct sched_rt_entity *rt_se);
 
