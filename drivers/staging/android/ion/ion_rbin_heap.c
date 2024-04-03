@@ -312,7 +312,9 @@ static int ion_rbin_heap_prereclaim(void *data)
 
 	while (true) {
 		wait_event_freezable(rbin_heap->waitqueue, rbin_heap->task_run);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 		trace_printk("start\n");
+#endif
 		total_size = 0;
 		while (true) {
 			page = alloc_rbin_page(rbin_heap, size, false);
@@ -324,7 +326,9 @@ static int ion_rbin_heap_prereclaim(void *data)
 			total_size += page_private(page);
 			atomic_add(1 << order, &rbin_pool_pages);
 		}
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 		trace_printk("end %lu\n", total_size);
+#endif
 		rbin_heap->task_run = 0;
 	}
 	return 0;
@@ -339,7 +343,9 @@ static int ion_rbin_heap_shrink(void *data)
 
 	while (true) {
 		wait_event_freezable(rbin_heap->waitqueue, rbin_heap->shrink_run);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 		trace_printk("start\n");
+#endif
 		total_size = 0;
 		while (true) {
 			page = alloc_rbin_page_from_pool(rbin_heap, size);
@@ -348,7 +354,9 @@ static int ion_rbin_heap_shrink(void *data)
 			ion_rbin_free(page_to_phys(page), page_private(page));
 			total_size += page_private(page);
 		}
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 		trace_printk("%lu\n", total_size);
+#endif
 		rbin_heap->shrink_run = 0;
 	}
 	return 0;

@@ -129,7 +129,9 @@ void tracing_mark_write(struct decon_device *decon, char id, char *str1, int val
 		return;
 	}
 
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 	trace_printk(buf);
+#endif
 }
 
 static void decon_dump_using_dpp(struct decon_device *decon)

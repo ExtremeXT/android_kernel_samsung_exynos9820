@@ -213,8 +213,10 @@ static void rc_rbnode_isolate(struct rc_pool *rcpool, struct rc_rbnode *rbnode)
 		RB_CLEAR_NODE(&rbnode->rb_node);
 		kref_put(&rbnode->refcount, rc_rbnode_release);
 	} else {
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 		trace_printk("rbincache: unabled to erase rbnode : refcount=%d\n",
 				atomic_read(&rbnode->refcount.refcount.refs));
+#endif
 	}
 }
 
@@ -284,7 +286,9 @@ static int rc_store_handle(int pool_id, int rb_index, int ra_index, void *handle
 
 		spin_unlock(&rbnode->ra_lock);
 		write_unlock_irqrestore(&rcpool->rb_lock, flags);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 		trace_printk("rbincache: handle insertion failed\n");
+#endif
 	} else {
 		atomic_inc(&rc_num_ra_entry);
 	}
@@ -517,7 +521,9 @@ static void rc_flush_inode(int pool_id, struct cleancache_filekey key)
 	write_unlock_irqrestore(&rcpool->rb_lock, flags1);
 
 	atomic_inc(&rc_num_succ_flush_inode);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 	trace_printk("rbincache: %d pages flushed\n", pages_flushed);
+#endif
 }
 
 static void rc_flush_fs(int pool_id)
@@ -558,7 +564,9 @@ static void rc_flush_fs(int pool_id)
 	write_unlock_irqrestore(&rcpool->rb_lock, flags1);
 
 	atomic_inc(&rc_num_succ_flush_fs);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 	trace_printk("rbincache: %d pages flushed\n", pages_flushed);
+#endif
 }
 
 static int rc_init_fs(size_t pagesize)
@@ -601,7 +609,9 @@ static int rc_init_fs(size_t pagesize)
 	pr_info("New pool created id:%d\n", ret);
 
 	atomic_inc(&rc_num_succ_init_fs);
+#if defined(CONFIG_TRACING) && defined(DEBUG)
 	trace_printk("rbincache\n");
+#endif
 
 out_unlock:
 	spin_unlock(&rbincache.pool_lock);
