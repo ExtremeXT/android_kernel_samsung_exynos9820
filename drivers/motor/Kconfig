@@ -8,7 +8,7 @@ config MOTOR_CS40L2X
 	default n
 	help
 	  Say Y to enable MOTOR_CS40L2X.
-	  
+
 config MOTOR_DRV_MAX77705
 	tristate "Maxim MAX77705 motor"
 	default n
@@ -36,3 +36,10 @@ config VIB_NOTIFIER
 	  If you say yes here you will get support for
 	  the VBUS status change notification.
 
+config SEC_HAPTIC_TEST
+	bool "KUnit test for sec_haptic_test"
+	depends on KUNIT
+	help
+	  If you want to enable this, please say yes in kunitconfig.
+	  To run test cases for SEC_HAPTIC,
+	  SEC_HAPTIC_TEST should be enabled.

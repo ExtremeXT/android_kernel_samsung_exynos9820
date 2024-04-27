@@ -23,7 +23,7 @@
 #include <linux/mfd/max77705-private.h>
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
-#include <linux/sec_haptic.h>
+#include <linux/motor/sec_haptic.h>
 
 #define MOTOR_LRA                       (1<<7)
 #define MOTOR_EN                        (1<<6)
@@ -61,13 +61,31 @@ static int max77705_haptic_set_pwm(void *data, u32 duty)
 	} else {
 		pwm_disable(drvdata->pwm);
 	}
-
 	return ret;
 }
 
 static int max77705_motor_boost_control(void *data, int control)
 {
-	return 0;
+	struct max77705_haptic_drvdata *drvdata = (struct max77705_haptic_drvdata *)data;
+	int ret = 0;
+
+	if (drvdata->pdata->gpio) {
+		gpio_request(drvdata->pdata->gpio,"haptic");
+		ret = gpio_direction_output(drvdata->pdata->gpio, control);
+	} else {
+		if (control) {
+			if (!regulator_is_enabled(drvdata->regulator))
+				ret = regulator_enable(drvdata->regulator);
+		}
+		else {
+			if (regulator_is_enabled(drvdata->regulator))
+				ret = regulator_disable(drvdata->regulator);
+		}
+		if (ret < 0)
+			pr_err("failed to %sable regulator %d\n",
+				control ? "en" : "dis", ret);
+	}
+	return ret;
 }
 
 static int max77705_haptic_i2c(void *data, bool en)
@@ -118,7 +136,6 @@ static struct max77705_haptic_pdata *of_max77705_haptic_dt(struct device *dev)
 	struct device_node *np;
 	struct max77705_haptic_pdata *pdata;
 	u32 temp;
-	const char *type;
 	int ret, i;
 
 	pdata = kzalloc(sizeof(struct max77705_haptic_pdata),
@@ -149,23 +166,10 @@ static struct max77705_haptic_pdata *of_max77705_haptic_dt(struct device *dev)
 		pdata->multi_frequency = (int)temp;
 
 	if (pdata->multi_frequency) {
-		pdata->multi_freq_duty
-			= devm_kzalloc(dev, sizeof(u32)*pdata->multi_frequency, GFP_KERNEL);
-		if (!pdata->multi_freq_duty) {
-			pr_err("%s: failed to allocate duty data\n", __func__);
-			goto err_parsing_dt;
-		}
 		pdata->multi_freq_period
 			= devm_kzalloc(dev, sizeof(u32)*pdata->multi_frequency, GFP_KERNEL);
 		if (!pdata->multi_freq_period) {
 			pr_err("%s: failed to allocate period data\n", __func__);
-			goto err_parsing_dt;
-		}
-
-		ret = of_property_read_u32_array(np, "haptic,duty", pdata->multi_freq_duty,
-				pdata->multi_frequency);
-		if (ret) {
-			pr_err("%s : error to get dt node duty\n", __func__);
 			goto err_parsing_dt;
 		}
 
@@ -176,35 +180,9 @@ static struct max77705_haptic_pdata *of_max77705_haptic_dt(struct device *dev)
 			goto err_parsing_dt;
 		}
 
-		pdata->duty = pdata->multi_freq_duty[0];
 		pdata->period = pdata->multi_freq_period[0];
 		pdata->freq_num = 0;
-
-		ret = of_property_read_u32(np,
-				"haptic,normal_ratio", &temp);
-		if (ret) {
-			pr_err("%s : error to get dt node normal_ratio\n", __func__);
-			goto err_parsing_dt;
-		} else
-			pdata->normal_ratio = (int)temp;
-
-		ret = of_property_read_u32(np,
-				"haptic,overdrive_ratio", &temp);
-		if (ret) {
-			pr_err("%s : error to get dt node overdrive_ratio\n", __func__);
-			goto err_parsing_dt;
-		} else
-			pdata->overdrive_ratio = (int)temp;
-
 	} else {
-		ret = of_property_read_u32(np,
-				"haptic,duty", &temp);
-		if (ret) {
-			pr_err("%s : error to get dt node duty\n", __func__);
-			goto err_parsing_dt;
-		} else
-			pdata->duty = (u16)temp;
-
 		ret = of_property_read_u32(np,
 				"haptic,period", &temp);
 		if (ret) {
@@ -214,13 +192,42 @@ static struct max77705_haptic_pdata *of_max77705_haptic_dt(struct device *dev)
 			pdata->period = (u16)temp;
 	}
 
+	ret = of_property_read_u32(np,
+			"haptic,normal_ratio", &temp);
+	if (ret) {
+		pr_err("%s : error to get dt node normal_ratio\n", __func__);
+		goto err_parsing_dt;
+	} else
+		pdata->normal_ratio = (int)temp;
+
+	ret = of_property_read_u32(np,
+			"haptic,overdrive_ratio", &temp);
+	if (ret) {
+		pr_err("%s : error to get dt node overdrive_ratio\n", __func__);
+		goto err_parsing_dt;
+	} else
+		pdata->overdrive_ratio = (int)temp;
+
+	ret = of_property_read_u32(np, "haptic,high_temp_ratio", &temp);
+	if (ret) {
+		pr_err("%s: temp_duty_ratio isn't used\n", __func__);
+		pdata->high_temp_ratio = 0;
+	} else
+		pdata->high_temp_ratio = (int)temp;
+
+	ret = of_property_read_u32(np, "haptic,temperature", &temp);
+	if (ret) {
+		pr_err("%s: temperature isn't used\n", __func__);
+		pdata->temperature = 0;
+	} else
+		pdata->temperature = (int)temp;
+
 	ret = of_property_read_string(np,
-			"haptic,type", &type);
+			"haptic,type", &pdata->vib_type);
 	if (ret) {
 		pr_err("%s : error to get dt node type\n", __func__);
 		goto err_parsing_dt;
-	} else
-		pdata->vib_type = type;
+	}
 
 	ret = of_property_read_u32(np,
 			"haptic,pwm_id", &temp);
@@ -230,21 +237,36 @@ static struct max77705_haptic_pdata *of_max77705_haptic_dt(struct device *dev)
 	} else
 		pdata->pwm_id = (u16)temp;
 
+	ret = of_property_read_string(np,
+			"haptic,regulator_name", &pdata->regulator_name);
+	if (ret)
+		pr_info("%s : error to get dt node regulator_name\n", __func__);
+
+	pdata->gpio = of_get_named_gpio(np,"haptic,gpio", 0);
+	if (!gpio_is_valid(pdata->gpio)) {
+		pr_info("%s : error to get dt node gpio\n", __func__);
+		pdata->gpio = 0;
+	} else {
+		pr_info("gpio num = %d\n", pdata->gpio);
+	}
+
 	/* debugging */
 	pr_info("max_timeout = %d\n", pdata->max_timeout);
 	if (pdata->multi_frequency) {
 		pr_info("multi frequency = %d\n", pdata->multi_frequency);
 		for (i = 0; i < pdata->multi_frequency; i++) {
-			pr_info("duty[%d] = %d\n", i, pdata->multi_freq_duty[i]);
 			pr_info("period[%d] = %d\n", i, pdata->multi_freq_period[i]);
 		}
 	} else {
-		pr_info("duty = %d\n", pdata->duty);
 		pr_info("period = %d\n", pdata->period);
 	}
+	pdata->duty = (pdata->period * pdata->normal_ratio) / 100;
+	pr_info("duty = %d\n", pdata->duty);
 	pr_info("normal_ratio = %d\n", pdata->normal_ratio);
 	pr_info("overdrive_ratio = %d\n", pdata->overdrive_ratio);
 	pr_info("pwm_id = %d\n", pdata->pwm_id);
+	pr_info("high temp ratio = %d\n", pdata->high_temp_ratio);
+	pr_info("temperature = %d\n", pdata->temperature);
 
 	return pdata;
 
@@ -302,7 +324,6 @@ static int max77705_haptic_probe(struct platform_device *pdev)
 	shdata->multi_frequency = pdata->multi_frequency;
 	shdata->freq_num = pdata->freq_num;
 	shdata->vib_type = pdata->vib_type;
-	shdata->multi_freq_duty = pdata->multi_freq_duty;
 	shdata->multi_freq_period = pdata->multi_freq_period;
 	shdata->data = drvdata;
 	shdata->boost = max77705_motor_boost_control;
@@ -310,7 +331,8 @@ static int max77705_haptic_probe(struct platform_device *pdev)
 	shdata->set_intensity = max77705_haptic_set_pwm;
 	shdata->normal_ratio = pdata->normal_ratio;
 	shdata->overdrive_ratio = pdata->overdrive_ratio;
-
+	shdata->high_temp_ratio = pdata->high_temp_ratio;
+	shdata->temperature = pdata->temperature;
 	drvdata->pwm = pwm_request(pdata->pwm_id, "vibrator");
 	if (IS_ERR(drvdata->pwm)) {
 		error = -EFAULT;
@@ -318,12 +340,23 @@ static int max77705_haptic_probe(struct platform_device *pdev)
 		goto err_pwm_request;
 	} else
 		pwm_config(drvdata->pwm, pdata->period >> 1, pdata->period);
+
+	if (pdata->regulator_name) {
+		drvdata->regulator = regulator_get(NULL, pdata->regulator_name);
+		if (IS_ERR(drvdata->regulator)) {
+			error = -EFAULT;
+			pr_err("Failed to get vmoter regulator, err num: %d\n", error);
+			goto err_regulator_get;
+		}
+	}
+
 	max77705_haptic_init_reg(drvdata, true);
 	max77705_motor_boost_control(drvdata, BOOST_ON);
 	sec_haptic_register(shdata);
-
 	return 0;
 
+err_regulator_get:
+	pwm_free(drvdata->pwm);
 err_pwm_request:
 	kfree(shdata);
 err_alloc2:
