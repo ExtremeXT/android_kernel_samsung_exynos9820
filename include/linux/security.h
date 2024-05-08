@@ -69,6 +69,34 @@ struct audit_krule;
 struct user_namespace;
 struct timezone;
 
+#ifdef CONFIG_RKP_KDP
+#define rocred_uc_read(x) atomic_read(x->use_cnt)
+#define rocred_uc_inc(x)  atomic_inc(x->use_cnt)
+#define rocred_uc_dec_and_test(x) atomic_dec_and_test(x->use_cnt)
+#define rocred_uc_inc_not_zero(x) atomic_inc_not_zero(x->use_cnt)
+#define rocred_uc_set(x,v) atomic_set(x->use_cnt,v)
+
+extern int rkp_cred_enable;
+extern char __rkp_ro_start[], __rkp_ro_end[];
+extern struct cred init_cred;
+extern struct task_security_struct init_sec;
+/*Check whether the address belong to Cred Area*/
+static inline u8 rkp_ro_page(unsigned long addr)
+{
+	if(!rkp_cred_enable)
+		return (u8)0;
+	if((addr == ((unsigned long)&init_cred)) || 
+		(addr == ((unsigned long)&init_sec)))
+		return (u8)1;
+	else
+		return rkp_is_pg_protected(addr);
+}
+extern int security_integrity_current(void);
+
+#else
+#define security_integrity_current()  0
+#endif /*CONFIG_RKP_KDP*/
+
 enum lsm_event {
 	LSM_POLICY_CHANGE,
 };
@@ -197,13 +225,13 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
 extern int security_init(void);
 
 /* Security operations */
-int security_binder_set_context_mgr(struct task_struct *mgr);
-int security_binder_transaction(struct task_struct *from,
-				struct task_struct *to);
-int security_binder_transfer_binder(struct task_struct *from,
-				    struct task_struct *to);
-int security_binder_transfer_file(struct task_struct *from,
-				  struct task_struct *to, struct file *file);
+int security_binder_set_context_mgr(const struct cred *mgr);
+int security_binder_transaction(const struct cred *from,
+				const struct cred *to);
+int security_binder_transfer_binder(const struct cred *from,
+				    const struct cred *to);
+int security_binder_transfer_file(const struct cred *from,
+				  const struct cred *to, struct file *file);
 int security_ptrace_access_check(struct task_struct *child, unsigned int mode);
 int security_ptrace_traceme(struct task_struct *parent);
 int security_capget(struct task_struct *target,
@@ -424,25 +452,25 @@ static inline int security_init(void)
 	return 0;
 }
 
-static inline int security_binder_set_context_mgr(struct task_struct *mgr)
+static inline int security_binder_set_context_mgr(const struct cred *mgr)
 {
 	return 0;
 }
 
-static inline int security_binder_transaction(struct task_struct *from,
-					      struct task_struct *to)
+static inline int security_binder_transaction(const struct cred *from,
+					      const struct cred *to)
 {
 	return 0;
 }
 
-static inline int security_binder_transfer_binder(struct task_struct *from,
-						  struct task_struct *to)
+static inline int security_binder_transfer_binder(const struct cred *from,
+						  const struct cred *to)
 {
 	return 0;
 }
 
-static inline int security_binder_transfer_file(struct task_struct *from,
-						struct task_struct *to,
+static inline int security_binder_transfer_file(const struct cred *from,
+						const struct cred *to,
 						struct file *file)
 {
 	return 0;
