@@ -166,6 +166,9 @@ ENDPROC(cpu_do_switch_mm)
 	msr	ttbr1_el1, \tmp1
 	isb
 	tlbi	vmalle1
+#ifdef CONFIG_SOC_EXYNOS9820
+	tlbi    vaale1is, xzr                   // dummy TLBI
+#endif
 	dsb	nsh
 	isb
 .endm
@@ -176,7 +179,11 @@ ENDPROC(cpu_do_switch_mm)
  * This is the low-level counterpart to cpu_replace_ttbr1, and should not be
  * called by anything else. It can only be executed from a TTBR0 mapping.
  */
+#ifdef CONFIG_RKP_CFP_JOPP
+NOP_ENTRY(idmap_cpu_replace_ttbr1)
+#else
 ENTRY(idmap_cpu_replace_ttbr1)
+#endif
 	mrs	x2, daif
 	msr	daifset, #0xf
 
@@ -204,9 +211,15 @@ ENDPROC(idmap_cpu_replace_ttbr1)
 
 	.macro __idmap_kpti_put_pgtable_ent_ng, type
 	orr	\type, \type, #PTE_NG		// Same bit for blocks and pages
-	str	\type, [cur_\()\type\()p]	// Update the entry and ensure
-	dmb	sy				// that it is visible to all
-	dc	civac, cur_\()\type\()p		// CPUs.
+#ifdef CONFIG_UH_RKP
+	mov	x2, \type
+	mov	x1, cur_\()\type\()p		// Update the entry for uH rkp
+	str	x2, [x1]			// Need to check for corruption of each register
+#else
+	str	\type, [cur_\()\type\()p]	// Update the entry and ensure it
+#endif
+	dmb	sy
+	dc	civac, cur_\()\type\()p		// is visible to all CPUs.
 	.endm
 
 /*
@@ -216,7 +229,11 @@ ENDPROC(idmap_cpu_replace_ttbr1)
  */
 __idmap_kpti_flag:
 	.long	1
+#ifdef CONFIG_RKP_CFP_JOPP
+NOP_ENTRY(idmap_kpti_install_ng_mappings)
+#else
 ENTRY(idmap_kpti_install_ng_mappings)
+#endif
 	cpu		.req	w0
 	num_cpus	.req	w1
 	swapper_pa	.req	x2
@@ -388,6 +405,9 @@ ENDPROC(idmap_kpti_install_ng_mappings)
 	.pushsection ".idmap.text", "awx"
 ENTRY(__cpu_setup)
 	tlbi	vmalle1				// Invalidate local TLB
+#ifdef CONFIG_SOC_EXYNOS9820
+	tlbi    vaale1is, xzr                   // dummy TLBI
+#endif
 	dsb	nsh
 
 	mov	x0, #3 << 20
@@ -419,11 +439,7 @@ ENTRY(__cpu_setup)
 	/*
 	 * Prepare SCTLR
 	 */
-	adr	x5, crval
-	ldp	w5, w6, [x5]
-	mrs	x0, sctlr_el1
-	bic	x0, x0, x5			// clear bits
-	orr	x0, x0, x6			// set bits
+	mov_q	x0, SCTLR_EL1_SET
 	/*
 	 * Set/prepare TCR and TTBR. We use 512GB (39-bit) address range for
 	 * both user and kernel.
@@ -459,21 +475,3 @@ ENTRY(__cpu_setup)
 	msr	tcr_el1, x10
 	ret					// return to head.S
 ENDPROC(__cpu_setup)
-
-	/*
-	 * We set the desired value explicitly, including those of the
-	 * reserved bits. The values of bits EE & E0E were set early in
-	 * el2_setup, which are left untouched below.
-	 *
-	 *                 n n            T
-	 *       U E      WT T UD     US IHBS
-	 *       CE0      XWHW CZ     ME TEEA S
-	 * .... .IEE .... NEAI TE.I ..AD DEN0 ACAM
-	 * 0011 0... 1101 ..0. ..0. 10.. .0.. .... < hardware reserved
-	 * .... .1.. .... 01.1 11.1 ..01 0.01 1101 < software settings
-	 */
-	.type	crval, #object
-crval:
-	.word	0xfcffffff			// clear
-	.word	0x34d5d91d			// set
-	.popsection
