@@ -108,92 +108,8 @@
 #include "avc_ss.h"
 
 #ifdef CONFIG_LOD_SEC
-#ifdef CONFIG_RKP_KDP
-#define rkp_is_lod_cred(x) ((x->type)>>3 & 1)
-#else
-#define rkp_is_lod_cred(x) (uid_is_LOD(x->uid.val) || (strcmp(current->comm, "nst") == 0 && x->uid.val == 0))
-#endif  /* CONFIG_RKP_KDP */
+#define is_lod_cred(x) (uid_is_LOD(x->uid.val) || (strcmp(current->comm, "nst") == 0 && x->uid.val == 0))
 #endif  /* CONFIG_LOD_SEC */
-
-#ifdef CONFIG_RKP_NS_PROT
-extern unsigned int cmp_ns_integrity(void);
-#else
-unsigned int cmp_ns_integrity(void)
-{
-	return 0;
-}
-#endif
-
-#ifdef CONFIG_RKP_KDP
-struct task_security_struct init_sec __kdp_ro;
-extern struct kmem_cache *tsec_jar;
-extern void rkp_free_security(unsigned long tsec);
-u8 rkp_ro_page(unsigned long addr);
-static inline unsigned int cmp_sec_integrity(const struct cred *cred,struct mm_struct *mm)
-{
-	return ((cred->bp_task != current) || 
-			(mm && (!( in_interrupt() || in_softirq())) && 
-			(cred->bp_pgd != swapper_pg_dir) &&
-			(mm->pgd != cred->bp_pgd)));	
-}
-extern struct cred init_cred;
-static inline unsigned int rkp_is_valid_cred_sp(u64 cred,u64 sp)
-{
-		struct task_security_struct *tsec = (struct task_security_struct *)sp;
-
-		if((cred == (u64)&init_cred) && 
-			( sp == (u64)&init_sec)){
-			return 0;
-		}
-		if(!rkp_ro_page(cred)|| !rkp_ro_page(cred+sizeof(struct cred)-1)||
-			(!rkp_ro_page(sp)|| !rkp_ro_page(sp+sizeof(struct task_security_struct)-1))) {
-			return 1;
-		}
-		if((u64)tsec->bp_cred != cred) {
-			return 1;
-		}
-		return 0;
-}
-inline void rkp_print_debug(void)
-{
-	u64 pgd;
-	struct cred *cred;
-
-	pgd = (u64)(current->mm?current->mm->pgd:swapper_pg_dir);
-	cred = (struct cred *)current_cred();
-
-	printk(KERN_ERR"\n RKP44 cred = %p bp_task = %p bp_pgd = %p pgd = %llx stat = #%d# task = %p mm = %p \n",cred,cred->bp_task,cred->bp_pgd,pgd,(int)rkp_ro_page((unsigned long long)cred),current,current->mm);
-
-	//printk(KERN_ERR"\n RKP44_1 uid = %d gid = %d euid = %d  egid = %d \n",(u32)cred->uid,(u32)cred->gid,(u32)cred->euid,(u32)cred->egid);
-	printk(KERN_ERR"\n RKP44_2 Cred %llx #%d# #%d# Sec ptr %llx #%d# #%d#\n",(u64)cred,rkp_ro_page((u64)cred),rkp_ro_page((u64)cred+sizeof(struct cred)),(u64)cred->security, rkp_ro_page((u64)cred->security),rkp_ro_page((u64)cred->security+sizeof(struct task_security_struct)));
-
-
-}
-/* Main function to verify cred security context of a process */
-int security_integrity_current(void)
-{
-	rcu_read_lock();
-	if ( rkp_cred_enable && 
-		(rkp_is_valid_cred_sp((u64)current_cred(),(u64)current_cred()->security)||
-		cmp_sec_integrity(current_cred(),current->mm)||
-		cmp_ns_integrity())) {
-		rkp_print_debug();
-		rcu_read_unlock();
-		panic("RKP CRED PROTECTION VIOLATION\n");
-	}
-	rcu_read_unlock();
-	return 0;
-}
-unsigned int rkp_get_task_sec_size(void)
-{
-	return sizeof(struct task_security_struct);
-}
-unsigned int rkp_get_offset_bp_cred(void)
-{
-	return offsetof(struct task_security_struct,bp_cred);
-}
-#endif  /* CONFIG_RKP_KDP */
-
 
 /* SECMARK reference count */
 static atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
@@ -204,13 +120,7 @@ static DEFINE_MUTEX(selinux_sdcardfs_lock);
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
 // [ SEC_SELINUX_PORTING_COMMON
-#if defined(CONFIG_ALWAYS_ENFORCE)
-//CONFIG_RKP_KDP
-int selinux_enforcing __kdp_ro;
-#else
 int selinux_enforcing;
-#endif
-
 // ] SEC_SELINUX_PORTING_COMMON
 
 static int __init enforcing_setup(char *str)
@@ -230,8 +140,7 @@ __setup("enforcing=", enforcing_setup);
 #endif
 
 #ifdef CONFIG_SECURITY_SELINUX_BOOTPARAM
-int selinux_enabled __kdp_ro = CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE;
-//CONFIG_RKP_KDP
+int selinux_enabled = CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE;
 
 static int __init selinux_enabled_setup(char *str)
 {
@@ -248,7 +157,7 @@ static int __init selinux_enabled_setup(char *str)
 }
 __setup("selinux=", selinux_enabled_setup);
 #else
-int selinux_enabled __kdp_ro = 1;
+int selinux_enabled = 1;
 #endif
 
 static struct kmem_cache *sel_inode_cache;
@@ -314,14 +223,9 @@ static void cred_init_security(void)
 	struct cred *cred = (struct cred *) current->real_cred;
 	struct task_security_struct *tsec;
 
-#ifdef CONFIG_RKP_KDP
-	tsec = &init_sec;
-	tsec->bp_cred = cred;
-#else
 	tsec = kzalloc(sizeof(struct task_security_struct), GFP_KERNEL);
 	if (!tsec)
 		panic("SELinux:  Failed to initialize initial task.\n");
-#endif
 	tsec->osid = tsec->sid = SECINITSID_KERNEL;
 	cred->security = tsec;
 }
@@ -1869,7 +1773,7 @@ static int cred_has_capability(const struct cred *cred,
 	switch (CAP_TO_INDEX(cap)) {
 	case 0:
 #if defined(CONFIG_LOD_SEC)
-		if (!initns && rkp_is_lod_cred(cred)) {
+		if (!initns && is_lod_cred(cred)) {
 			sclass = SECCLASS_CAP_LOD;
 		} else {
 			sclass = initns ? SECCLASS_CAPABILITY : SECCLASS_CAP_USERNS;
@@ -1880,7 +1784,7 @@ static int cred_has_capability(const struct cred *cred,
 		break;
 	case 1:
 #if defined(CONFIG_LOD_SEC)
-		if (!initns && rkp_is_lod_cred(cred)) {
+		if (!initns && is_lod_cred(cred)) {
 			sclass = SECCLASS_CAP2_LOD;
 		} else {
 			sclass = initns ? SECCLASS_CAPABILITY2 : SECCLASS_CAP2_USERNS;
@@ -4031,17 +3935,8 @@ static void selinux_cred_free(struct cred *cred)
 	 * security_prepare_creds() returned an error.
 	 */
 	BUG_ON(cred->security && (unsigned long) cred->security < PAGE_SIZE);
-#ifdef CONFIG_RKP_KDP
-	if (rkp_ro_page((unsigned long)cred)) {
-		uh_call(UH_APP_RKP, RKP_KDP_X45, (u64) &cred->security, 7, 0, 0);
-	} else
-#endif /*CONFIG_RKP_KDP*/
 	cred->security = (void *) 0x7UL;
-#ifdef CONFIG_RKP_KDP
-	rkp_free_security((unsigned long)tsec);
-#else/*CONFIG_RKP_KDP*/
 	kfree(tsec);
-#endif /*CONFIG_RKP_KDP*/
 }
 
 /*
@@ -6646,8 +6541,7 @@ static void selinux_bpf_prog_free(struct bpf_prog_aux *aux)
 }
 #endif
 
-//CONFIG_RKP_KDP
-static struct security_hook_list selinux_hooks[] __lsm_ro_after_init_kdp = {
+static struct security_hook_list selinux_hooks[] __lsm_ro_after_init = {
 	LSM_HOOK_INIT(binder_set_context_mgr, selinux_binder_set_context_mgr),
 	LSM_HOOK_INIT(binder_transaction, selinux_binder_transaction),
 	LSM_HOOK_INIT(binder_transfer_binder, selinux_binder_transfer_binder),

@@ -749,7 +749,7 @@ static void simulate_UNALIGNED(char *arg)
 {
 	static u8 data[5] __aligned(4) = {1, 2, 3, 4, 5};
 	u32 *p;
-	u32 val = 0x12345678;
+	u32 val = 0x0;
 
 	pr_crit("%s()\n", __func__);
 
@@ -765,12 +765,8 @@ static void simulate_WRITE_RO(char *arg)
 
 	pr_crit("%s()\n", __func__);
 // Write to function addr will triger a warning by JOPP compiler
-#ifdef CONFIG_RKP_CFP_JOPP
-	ptr = (unsigned long *)__start_rodata;
-#else
 	ptr = (unsigned long *)simulate_WRITE_RO;
-#endif
-	*ptr ^= 0x12345678;
+	*ptr ^= 0x0;
 }
 
 #define BUFFER_SIZE SZ_1K
