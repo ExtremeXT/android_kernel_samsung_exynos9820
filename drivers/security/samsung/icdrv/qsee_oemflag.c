@@ -16,7 +16,6 @@
  */
 
 #include <linux/types.h>
-#include <linux/task_integrity.h>
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)
 #include <soc/qcom/scm.h>

@@ -1876,11 +1876,7 @@ int file_update_time(struct file *file)
 	 * NOTICE: iversion code has been optimized in v4.17-rc4. So this patch should be
 	 * removed since v4.17-rc4
 	 */
-	#ifdef CONFIG_FIVE
-	need_sync = IS_I_VERSION(inode) && (inode->i_flags & S_IMA);
-	#else
 	need_sync = IS_I_VERSION(inode);
-	#endif
 	if (need_sync)
 		sync_it |= S_VERSION;
 

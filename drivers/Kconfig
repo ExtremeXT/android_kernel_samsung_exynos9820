@@ -235,8 +235,6 @@ source "drivers/motor/Kconfig"
 
 source "drivers/fingerprint/Kconfig"
 
-source "drivers/security/samsung/five_tee_driver/Kconfig"
-
 #source "drivers/gator/Kconfig"
 
 source "drivers/security/samsung/icdrv/Kconfig"
