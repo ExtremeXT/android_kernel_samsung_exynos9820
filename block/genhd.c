@@ -21,7 +21,6 @@
 #include <linux/log2.h>
 #include <linux/pm_runtime.h>
 #include <linux/badblocks.h>
-#include <linux/ologk.h>
 
 #ifdef CONFIG_BLOCK_SUPPORT_STLOG
 #include <linux/fslog.h>
@@ -1278,28 +1277,6 @@ static ssize_t iomon_store(struct device *dev,
 	part_stat_unlock();
 	nread = part_in_flight_read(hd);
 	nwrite = part_in_flight_write(hd);
-
-	if(!strcmp(action, "c") || !strcmp(action, "s") || !strcmp(action, "e")) {
-		ologk("rc %lu rmb %lu "
-			"wc %lu wmb %lu dc %lu dmb %lu "
-			"inp %u %u "
-			"iot %u %llu ",
-			part_stat_read(hd, ios[READ]),
-			SEC2MB(part_stat_read(hd, sectors[READ])),
-
-			part_stat_read(hd, ios[WRITE]) - 
-			part_stat_read(hd, discard_ios) - part_stat_read(hd, flush_ios),
-			SEC2MB(part_stat_read(hd, sectors[WRITE])) - 
-			SEC2MB(part_stat_read(hd, discard_sectors)),
-			part_stat_read(hd, discard_ios),
-			SEC2MB(part_stat_read(hd, discard_sectors)),
-
-			nread,
-			nwrite,
-
-			jiffies_to_msecs(part_stat_read(hd, io_ticks)),
-			disk->queue->in_flight_time / USEC_PER_MSEC);
-	}
 
 	return count;
 }
