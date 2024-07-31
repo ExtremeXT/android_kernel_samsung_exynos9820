@@ -204,12 +204,6 @@ obj-$(CONFIG_EXYNOS_BTS)	+= bts/
 # Mobicore driver
 obj-$(CONFIG_TRUSTONIC_TEE)     += gud/
 
-# FIVE TEE driver
-ifneq ($(CONFIG_PROCA_S_OS), y)
-obj-$(CONFIG_FIVE_TEE_DRIVER)	+= security/samsung/five_tee_driver/
-obj-$(CONFIG_ICD)		+= security/samsung/icdrv/
-endif
-
 # vision driver
 obj-$(CONFIG_VISION_SUPPORT)	+= vision/
 
@@ -236,11 +230,6 @@ obj-y                           += motor/
 obj-y				+= kperfmon/
 
 obj-$(CONFIG_SEC_EXT)		+= samsung/
-
-#TZIC
-ifneq ($(CONFIG_PROCA_S_OS), y)
-obj-y  += security/samsung/tzic/
-endif
 
 # SPU signature verify
 obj-$(CONFIG_SPU_VERIFY) += spu_verify/

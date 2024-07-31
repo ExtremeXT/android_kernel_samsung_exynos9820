@@ -43,11 +43,3 @@ obj-$(CONFIG_SDP) += sdp/built-in.o
 # FIVE
 subdir-$(CONFIG_FIVE)			+= samsung/five
 obj-$(CONFIG_FIVE)			+= samsung/five/
-
-# PROCA module
-subdir-$(CONFIG_PROCA)		+= proca
-obj-$(CONFIG_PROCA)		+= proca/
-
-# GAF module for PROCA, Secure Storage 1
-subdir-$(CONFIG_GAF) += proca/gaf
-obj-$(CONFIG_GAF)    += proca/gaf/
