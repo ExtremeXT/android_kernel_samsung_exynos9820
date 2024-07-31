@@ -73,10 +73,6 @@
 #include <asm/io.h>
 #include <asm/unistd.h>
 
-#ifdef CONFIG_SECURITY_DEFEX
-#include <linux/defex.h>
-#endif
-
 #ifdef CONFIG_LOD_SEC
 #include <linux/linux_on_dex.h>
 #endif
@@ -947,11 +943,6 @@ SYSCALL_DEFINE1(setfsuid, uid_t, uid)
 	}
 #endif
 
-#ifdef CONFIG_SECURITY_DEFEX
-	if (task_defex_enforce(current, NULL, -__NR_setfsuid))
-		return old_fsuid;
-#endif
-
 	new = prepare_creds();
 	if (!new)
 		return old_fsuid;
@@ -1003,11 +994,6 @@ SYSCALL_DEFINE1(setfsgid, gid_t, gid)
 		if (!gid_is_LOD(kgid.val))
 			return -EACCES;
 	}
-#endif
-
-#ifdef CONFIG_SECURITY_DEFEX
-	if (task_defex_enforce(current, NULL, -__NR_setfsgid))
-		return old_fsgid;
 #endif
 
 	new = prepare_creds();
