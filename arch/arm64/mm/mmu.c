@@ -1,4 +1,4 @@
-\/*
+/*
  * Based on arch/arm/mm/mmu.c
  *
  * Copyright (C) 1995-2005 Russell King
