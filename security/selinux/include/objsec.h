@@ -36,9 +36,6 @@ struct task_security_struct {
 	u32 create_sid;		/* fscreate SID */
 	u32 keycreate_sid;	/* keycreate SID */
 	u32 sockcreate_sid;	/* fscreate SID */
-#ifdef CONFIG_RKP_KDP
-	void *bp_cred;
-#endif
 };
 
 /*

@@ -310,16 +310,6 @@
 #define PG_TRAMP
 #endif
 
-#ifdef CONFIG_UH_RKP
-#define RKP_RO_PGT					\
-	PG_IDMAP								\
-	PG_SWAP									\
-	PG_RESERVED								\
-	PG_TRAMP
-#else
-#define RKP_RO_PGT
-#endif
-
 /*
  * Read only Data
  */
@@ -339,26 +329,6 @@
 	.rodata1          : AT(ADDR(.rodata1) - LOAD_OFFSET) {		\
 		RO_AFTER_INIT_DATA	/* Read only after init */	\
 		*(.rodata1)						\
-	}								\
-									\
-	. = ALIGN(4096);				\
-	.rkp_bss          : AT(ADDR(.rkp_bss) - LOAD_OFFSET) {		\
-		VMLINUX_SYMBOL(__start_rkp_bss) = .;		\
-		*(.rkp_bss.page_aligned)						\
-		*(.rkp_bss)						\
-		VMLINUX_SYMBOL(__stop_rkp_bss) = .;		\
-	} = 0								\
-									\
-	.rkp_ro          : AT(ADDR(.rkp_ro) - LOAD_OFFSET) {		\
-		VMLINUX_SYMBOL(__start_rkp_ro) = .;		\
-		*(.rkp_ro)						\
-		VMLINUX_SYMBOL(__stop_rkp_ro) = .;		\
-		VMLINUX_SYMBOL(__start_kdp_ro) = .;		\
-		*(.kdp_ro)						\
-		VMLINUX_SYMBOL(__stop_kdp_ro) = .;		\
-		VMLINUX_SYMBOL(__start_rkp_ro_pgt) = .;		\
-		RKP_RO_PGT						\
-		VMLINUX_SYMBOL(__stop_rkp_ro_pgt) = .;		\
 	}								\
 									\
 	/* PCI quirks */						\
