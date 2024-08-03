@@ -219,9 +219,6 @@ obj-$(CONFIG_SENSORS_MAX86915)	+= optics/
 obj-$(CONFIG_SENSORS_TCS3407)	+= optics/
 obj-$(CONFIG_SENSORS_VD6281)	+= optics/
 
-# Motor
-obj-y                           += motor/
-
 # Vibrator
 obj-y				+= vibrator/
 
