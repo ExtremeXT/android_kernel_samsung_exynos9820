@@ -130,3 +130,5 @@ kernel/configs/android-*.cfg
 build/out/
 out/
 
+# TZDEV
+drivers/misc/tzdev/
