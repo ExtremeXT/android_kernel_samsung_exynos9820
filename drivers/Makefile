@@ -222,6 +222,9 @@ obj-$(CONFIG_SENSORS_VD6281)	+= optics/
 # Motor
 obj-y                           += motor/
 
+# Vibrator
+obj-y				+= vibrator/
+
 # streamline
 #ifeq ($(CONFIG_GATOR), y)
 #	obj-$(CONFIG_GATOR)				+= gator/

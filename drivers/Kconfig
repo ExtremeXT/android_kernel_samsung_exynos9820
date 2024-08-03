@@ -233,6 +233,8 @@ source "drivers/optics/Kconfig"
 
 source "drivers/motor/Kconfig"
 
+source "drivers/vibrator/Kconfig"
+
 source "drivers/fingerprint/Kconfig"
 
 #source "drivers/gator/Kconfig"
