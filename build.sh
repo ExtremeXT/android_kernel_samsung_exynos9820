@@ -59,22 +59,22 @@ O=out
 KERNEL_DEFCONFIG=extreme_"$MODEL"_defconfig
 case $MODEL in
 beyond0lte)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPRI28A016KU
     SOC=exynos9820
     TZDEV=new
 ;;
 beyond0lteks)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPRI28C007KU
     SOC=exynos9820
     TZDEV=new
 ;;
 beyond1lte)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPRI28B016KU
     SOC=exynos9820
     TZDEV=new
 ;;
 beyond1lteks)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPRI28D007KU
     SOC=exynos9820
     TZDEV=new
 ;;
@@ -84,42 +84,42 @@ beyond2lte)
     TZDEV=new
 ;;
 beyond2lteks)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPRI28E007KU
     SOC=exynos9820
     TZDEV=new
 ;;
 beyondx)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPSC04B014KU
     SOC=exynos9820
     TZDEV=new
 ;;
 beyondxks)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPRK21D006KU
     SOC=exynos9820
     TZDEV=new
 ;;
 d1)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPSD26B009KU
     SOC=exynos9825
     TZDEV=old
 ;;
 d1xks)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPSD23A002KU
     SOC=exynos9825
     TZDEV=new
 ;;
 d2s)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPSC14B009KU
     SOC=exynos9825
     TZDEV=old
 ;;
 d2x)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPSC14C009KU
     SOC=exynos9825
     TZDEV=old
 ;;
 d2xks)
-    BOARD=SRPRI17C016KU
+    BOARD=SRPSD23C002KU
     SOC=exynos9825
     TZDEV=new
 ;;
@@ -187,7 +187,7 @@ make ${MAKE_ARGS} -j$CORES || abort
 # Define constant variables
 KERNEL_PATH=build/out/$MODEL/Image
 KERNEL_OFFSET=0x00008000
-RAMDISK_OFFSET=0x01000000
+RAMDISK_OFFSET=0xF0000000
 SECOND_OFFSET=0xF0000000
 TAGS_OFFSET=0x00000100
 BASE=0x10000000
