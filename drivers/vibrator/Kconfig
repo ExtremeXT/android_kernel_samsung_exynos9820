@@ -1,3 +1,7 @@
+config ANDROID_TIMED_OUTPUT
+	bool "Timed output class driver"
+	default n
+
 config MOTOR_CS40L2X
 	tristate "motor"
 	default n
