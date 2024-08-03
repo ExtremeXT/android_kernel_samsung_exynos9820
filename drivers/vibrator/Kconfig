@@ -1,3 +1,9 @@
+config MOTOR_CS40L2X
+	tristate "motor"
+	default n
+	help
+	  Say Y to enable MOTOR_CS40L2X.
+
 config MAX77705_VIBRATOR
 	tristate "Maxim MAX77705 vibrator"
 	default n
