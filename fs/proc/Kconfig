@@ -120,4 +120,4 @@ config PROC_PARSE_OPTION_ON_MOUNT
 config PROC_TRIGGER_SQLITE_BUG
 	bool "Trigger bug for SQLite debugging"
 	depends on PROC_FS
-	default y if !SAMSUNG_PRODUCT_SHIP && ANDROID_VERSION > "90000"
+	default y if !SAMSUNG_PRODUCT_SHIP

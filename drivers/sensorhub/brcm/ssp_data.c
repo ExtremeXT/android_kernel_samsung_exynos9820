@@ -41,13 +41,8 @@
 #endif
 
 
-#if defined(CONFIG_SENSORS_SSP_DAVINCI) || ANDROID_VERSION >= 100000
 #define SUPER_VDIS_FORMAT	0xEEEE
 #define VDIS_TIMESTAMP_FORMAT 	0xFFFF
-#else
-#define SUPER_VDIS_FORMAT	0xEEEEEEEE
-#define VDIS_TIMESTAMP_FORMAT 	0xFFFFFFFF
-#endif
 #define NORMAL_TIMESTAMP_FORMAT 0x0
 #define get_prev_index(a) (a - 1 + SIZE_TIMESTAMP_BUFFER) % SIZE_TIMESTAMP_BUFFER
 #define get_next_index(a) (a + 1) % SIZE_TIMESTAMP_BUFFER
@@ -105,23 +100,15 @@ static void get_timestamp(struct ssp_data *data, char *pchRcvDataFrame,
 	u64 update_timestamp = 0;
 	u64 current_timestamp = get_current_timestamp();
 	u32 ts_index = 0;
-#if defined(CONFIG_SENSORS_SSP_DAVINCI) || ANDROID_VERSION >= 100000
 	u16 ts_flag = 0;
-#else
-	u32 ts_flag = 0;
-#endif
 	u16 ts_cnt = 5;
 
 	if (msg_inst == MSG2AP_INST_VDIS_DATA) {
 		u64 prev_index = 0;
 
 		memcpy(&ts_index, pchRcvDataFrame + *iDataIdx, 4);
-#if defined(CONFIG_SENSORS_SSP_DAVINCI) || ANDROID_VERSION >= 100000
 		memcpy(&ts_flag, pchRcvDataFrame + *iDataIdx + 4, 2);
 		memcpy(&ts_cnt, pchRcvDataFrame + *iDataIdx + 6, 2);
-#else
-		memcpy(&ts_flag, pchRcvDataFrame + *iDataIdx + 4, 4);
-#endif
 		prev_index = get_prev_index(ts_index);
 
 		if (ts_flag == SUPER_VDIS_FORMAT || ts_flag == VDIS_TIMESTAMP_FORMAT) {

@@ -178,9 +178,7 @@ DTC_INCLUDE    := $(srctree)/scripts/dtc/include-prefixes
 
 dtc_cpp_flags  = -Wp,-MD,$(depfile).pre.tmp -nostdinc                    \
 		 $(addprefix -I,$(DTC_INCLUDE))                          \
-		 -undef -D__DTS__                                        \
-		 -DANDROID_VERSION=$(ANDROID_VERSION)                    \
-		 -DANDROID_MAJOR_VERSION=$(ANDROID_MAJOR_VERSION)
+		 -undef -D__DTS__
 
 ifeq ($(CONFIG_SEC_FACTORY),y)
 dtc_cpp_flags += -DCONFIG_SEC_FACTORY
