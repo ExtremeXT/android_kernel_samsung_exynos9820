@@ -216,15 +216,32 @@ if [[ "$SOC" == "exynos9825" ]]; then
     echo "-----------------------------------------------"
     ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtb.img build/dtconfigs/exynos9825.cfg -d out/arch/arm64/boot/dts/exynos
 fi
+echo "-----------------------------------------------"
 
 # Build dtbo
 echo "Building Device Tree Blob Output Image for "$MODEL"..."
 echo "-----------------------------------------------"
 ./toolchain/mkdtimg cfg_create build/out/$MODEL/dtbo.img build/dtconfigs/$MODEL.cfg -d out/arch/arm64/boot/dts/samsung
+echo "-----------------------------------------------"
 
 # Build ramdisk
 echo "Building RAMDisk..."
 echo "-----------------------------------------------"
+# Exynos 9820 fstab: fstab.exynos9820
+# Exynos 9825 fstab: fstab.exynos9825
+# So we will rename it dynamically
+if [ "$SOC" == "exynos9825" ] && [ ! -e "build/ramdisk/fstab.exynos9825" ]; then
+    echo "Switching to 9825 fstab..."
+    cp -a build/ramdisk/fstab.exynos9820 build/ramdisk/fstab.exynos9825
+    rm -rf build/ramdisk/fstab.exynos9820
+fi
+
+if [ "$SOC" == "exynos9820" ] && [ ! -e "build/ramdisk/fstab.exynos9820" ]; then
+    echo "Switching to 9820 fstab..."
+    cp -a build/ramdisk/fstab.exynos9825 build/ramdisk/fstab.exynos9820
+    rm -rf build/ramdisk/fstab.exynos9825
+fi
+
 pushd build/ramdisk > /dev/null
 find . ! -name . | LC_ALL=C sort | cpio -o -H newc -R root:root | gzip > ../out/$MODEL/ramdisk.cpio.gz || abort
 popd > /dev/null
