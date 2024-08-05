@@ -1132,10 +1132,16 @@ void binder_alloc_init(struct binder_alloc *alloc)
 	INIT_LIST_HEAD(&alloc->buffers);
 }
 
-void binder_alloc_shrinker_init(void)
+int binder_alloc_shrinker_init(void)
 {
-	list_lru_init(&binder_alloc_lru);
-	register_shrinker(&binder_shrinker);
+	int ret = list_lru_init(&binder_alloc_lru);
+
+	if (ret == 0) {
+		ret = register_shrinker(&binder_shrinker);
+		if (ret)
+			list_lru_destroy(&binder_alloc_lru);
+	}
+	return ret;
 }
 
 /**
@@ -1337,8 +1343,3 @@ void binder_alloc_copy_from_buffer(struct binder_alloc *alloc,
 				    dest, bytes);
 }
 
-void binder_alloc_shrinker_exit(void)
-{
-	unregister_shrinker(&binder_shrinker);
-	list_lru_destroy(&binder_alloc_lru);
-}
