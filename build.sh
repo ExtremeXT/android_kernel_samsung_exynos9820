@@ -42,18 +42,15 @@ pushd $(dirname "$0") > /dev/null
 CORES=`cat /proc/cpuinfo | grep -c processor`
 
 # Define toolchain variables
-CLANG_DIR=$PWD/toolchain/clang-r416183b/bin
-GCC_DIR=$PWD/toolchain/gcc_4.9/bin
-GCC_ARM32_DIR=$PWD/toolchain/gcc_4.9_arm32/bin
-PATH=$CLANG_DIR:$GCC_DIR:$GCC_ARM32_DIR:$PATH
+CLANG_DIR=$PWD/toolchain/clang-r416183b
+PATH=$CLANG_DIR/bin:$CLANG_DIR/lib:$PATH
 
 MAKE_ARGS="
 ARCH=arm64 \
-CLANG_TRIPLE=aarch64-linux-gnu- \
-CROSS_COMPILE=aarch64-linux-androidkernel- \
-CROSS_COMPILE_ARM32=arm-linux-androidkernel- \
+LLVM=1 \
+LLVM_IAS=1 \
 CC=clang \
-READELF=$GCC_DIR/aarch64-linux-android-readelf \
+READELF=$CLANG_DIR/bin/llvm-readelf \
 O=out
 "
 
