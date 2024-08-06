@@ -4,9 +4,13 @@
 # Author: Kevin Brodsky <kevin.brodsky@arm.com>
 # A mix between the arm64 and arm vDSO Makefiles.
 
-ifeq ($(LLVM),1)
+ifeq ($(cc-name),clang)
   CC_ARM32 := $(CC) $(CLANG_TARGET_ARM32) $(CLANG_GCC32_TC) $(CLANG_PREFIX32)
-  LD_ARM32 := $(LD)
+  ifeq ($(LLVM),1)
+    LD_ARM32 := $(LD)
+  else
+    LD_ARM32 := $(CROSS_COMPILE_ARM32)ld
+  endif
 else
   CC_ARM32 := $(CROSS_COMPILE_ARM32)$(cc-name)
   LD_ARM32 := $(CROSS_COMPILE_ARM32)ld
