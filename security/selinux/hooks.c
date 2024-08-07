@@ -6505,7 +6505,7 @@ static int selinux_perf_event_open(struct perf_event_attr *attr, int type)
 	else
 		return -EINVAL;
 
-	return avc_has_perm(&selinux_state, sid, sid, SECCLASS_PERF_EVENT,
+	return avc_has_perm(sid, sid, SECCLASS_PERF_EVENT,
 			    requested, NULL);
 }
 
@@ -6536,7 +6536,7 @@ static int selinux_perf_event_read(struct perf_event *event)
 	struct perf_event_security_struct *perfsec = event->security;
 	u32 sid = current_sid();
 
-	return avc_has_perm(&selinux_state, sid, perfsec->sid,
+	return avc_has_perm(sid, perfsec->sid,
 			    SECCLASS_PERF_EVENT, PERF_EVENT__READ, NULL);
 }
 
@@ -6545,7 +6545,7 @@ static int selinux_perf_event_write(struct perf_event *event)
 	struct perf_event_security_struct *perfsec = event->security;
 	u32 sid = current_sid();
 
-	return avc_has_perm(&selinux_state, sid, perfsec->sid,
+	return avc_has_perm(sid, perfsec->sid,
 			    SECCLASS_PERF_EVENT, PERF_EVENT__WRITE, NULL);
 }
 #endif
