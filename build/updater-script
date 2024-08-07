@@ -1,5 +1,5 @@
 ui_print(" ");
-ui_print("Installing ExtremeKernel (S10) UNOFFICIAL...");
+ui_print("Installing ExtremeKernel (S10/N10) UNOFFICIAL...");
 ui_print(" ");
 
 package_extract_file("files/boot.img", "/dev/block/by-name/boot");
