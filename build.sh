@@ -173,6 +173,10 @@ if [ "$TZDEV" == "old" ] && [ -e "drivers/misc/tzdev/umem.c" ]; then
     cp -a build/tzdev/old/* drivers/misc/tzdev
 fi
 
+if [ "$SOC" == "9825" ] then
+    9825="CONFIG_LOCALVERSION=-ExtremeKernel-N10-v1"
+fi
+
 echo "-----------------------------------------------"
 echo "Building kernel using "$KERNEL_DEFCONFIG""
 echo "Generating configuration file..."
