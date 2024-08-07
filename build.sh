@@ -173,15 +173,15 @@ if [ "$TZDEV" == "old" ] && [ -e "drivers/misc/tzdev/umem.c" ]; then
     cp -a build/tzdev/old/* drivers/misc/tzdev
 fi
 
-if [ "$SOC" == "exynos9825" ] then
-    9825=9825.config
+if [[ "$SOC" == "exynos9825" ]]; then
+    N10=9825.config
 fi
 
 echo "-----------------------------------------------"
 echo "Building kernel using "$KERNEL_DEFCONFIG""
 echo "Generating configuration file..."
 echo "-----------------------------------------------"
-make ${MAKE_ARGS} -j$CORES $KERNEL_DEFCONFIG extreme.config $KSU $9825 || abort
+make ${MAKE_ARGS} -j$CORES $KERNEL_DEFCONFIG extreme.config $KSU $N10 || abort
 
 echo "Building kernel..."
 echo "-----------------------------------------------"
