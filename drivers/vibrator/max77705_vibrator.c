@@ -148,12 +148,6 @@ static int max77705_vib_set_ratio(struct max77705_vibrator_drvdata *ddata)
 {
 	int ratio;
 
-	if (ddata->is_high_temp)
-		ratio = ddata->pdata->high_temp_ratio;
-	else {
-		ratio = ddata->pdata->normal_ratio;
-	}
-
 	pr_info("ratio set to %d\n", ratio);
 
 	return ratio;
