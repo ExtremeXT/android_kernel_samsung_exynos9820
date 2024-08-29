@@ -3679,25 +3679,16 @@
 
 			haptic {
 				status = "okay";
-				haptic,max_timeout = <10000>;
-				/* for multi-frequency */
-				haptic,multi_frequency = <1>;
-				haptic,frequency = <2000>;
-				/* frequency     alert low   mid   high  0     press release */
-				haptic,duty = <27551 27551 27551 27551 27551 27551 27551>;
-				haptic,period = <37741 37741 37741 37741 37741 37741 37741>;
+				haptic,max_timeout = <0x2710>;
+				haptic,multi_frequency = <0x7>;
+				haptic,duty = <0x6b9f 0x6b9f 0x6b9f 0x6b9f 0x6b9f 0x6b9f 0x6b9f>;
+				haptic,period = <0x936d 0x936d 0x936d 0x936d 0x936d 0x936d 0x936d>;
 				haptic,reg2 = <0x82>;
-				haptic,pwm_id = <1>;
+				haptic,pwm_id = <0x1>;
 				haptic,regulator_name = "VDD_MOTOR_3P3";
-				haptic,normal_ratio = <70>;
-				haptic,overdrive_ratio = <95>;
-				haptic,high_temp_ratio = <60>;
-				haptic,high_temp_ref = <55>;
-				pwms = <0xffffffff 0x01 0xf4240 0x00>;
-				haptic,motor_type = "LINEAR_0832RC";
-				samsung,steps = <6>;
-				samsung,intensities = <0 3000 4000 6000 8000 10000>;
-				samsung,haptic_intensities = <0 2000 4000 6000 8000 10000>;
+				haptic,normal_ratio = <0x4b>;
+				haptic,overdrive_ratio = <0x5f>;
+				haptic,type = "LINEAR_0832RC";
 			};
 		};
 	};
