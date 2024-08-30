@@ -160,6 +160,7 @@ fi
 if [ "$TZDEV" == "new" ] && [ ! -e "drivers/misc/tzdev/umem.c" ]; then
     echo "Switching to new TZDEV..."
     rm -rf drivers/misc/tzdev
+    rm -rf out/drivers/misc/tzdev
     mkdir -p drivers/misc/tzdev
     cp -a build/tzdev/new/* drivers/misc/tzdev
 fi
@@ -169,6 +170,7 @@ fi
 if [ "$TZDEV" == "old" ] && [ -e "drivers/misc/tzdev/umem.c" ]; then
     echo "Switching to old TZDEV..."
     rm -rf drivers/misc/tzdev
+    rm -rf out/drivers/misc/tzdev
     mkdir -p drivers/misc/tzdev
     cp -a build/tzdev/old/* drivers/misc/tzdev
 fi
