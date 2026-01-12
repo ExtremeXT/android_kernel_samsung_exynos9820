@@ -2,7 +2,7 @@
 
 ## Features
 
-- TBD
+- SuSFS 1.5.5
 
 ## Supported devices:
 
